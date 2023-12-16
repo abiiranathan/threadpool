@@ -18,6 +18,9 @@ type ThreadPool struct {
 
 	ctx    context.Context // Context with deadline for the pool.
 	cancel context.CancelFunc
+
+	// Internal state
+	closed bool // threadpool already closed
 }
 
 type PoolOption func(*ThreadPool)
@@ -57,11 +60,13 @@ func NewThreadPool(maxWorkers int, options ...PoolOption) *ThreadPool {
 	for _, option := range options {
 		option(tp)
 	}
+
+	tp.start()
 	return tp
 }
 
 // Start initializes and starts the worker pool.
-func (tp *ThreadPool) Start() {
+func (tp *ThreadPool) start() {
 	for i := 0; i < tp.maxWorkers; i++ {
 		go tp.worker()
 	}
@@ -109,7 +114,16 @@ func (tp *ThreadPool) AddTask(task func(context.Context) error) {
 
 // Wait waits for all tasks in the thread pool to complete and returns the first error encountered.
 func (tp *ThreadPool) Wait() error {
+	// Do not close an already closed channel
+	if tp.closed {
+		return nil
+	}
+	tp.closed = true
+
+	// close the channel, signal -> no more tasks accepted
 	close(tp.queue)
+
+	// wait for current tasks to complete
 	tp.wg.Wait()
 
 	tp.mu.Lock()

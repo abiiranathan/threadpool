@@ -49,9 +49,8 @@ func main() {
 	}
 
 	// Create a thread pool with a maximum of 5 workers
-	pool := threadpool.NewThreadPool(5, true)
+	pool := threadpool.NewThreadPool(5)
 	pool.SetTimeout(time.Second)
-	pool.Start()
 
 	start := time.Now()
 	// Add tasks to the thread pool
@@ -81,5 +80,9 @@ func main() {
 Run Example:
 
 ```bash
-go run cmd/main.go
+go run examples/basic/main.go
+```
+
+```bash
+go run examples/crawler/main.go
 ```

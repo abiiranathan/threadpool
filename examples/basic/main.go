@@ -53,8 +53,6 @@ func main() {
 		threadpool.Timeout(time.Second),
 	)
 
-	pool.Start()
-
 	start := time.Now()
 
 	// Add tasks to the thread pool
